@@ -1,59 +1,73 @@
 import React, { useRef } from 'react';
 import { motion, useScroll, useTransform } from 'framer-motion';
 
-function Panel({ title, subtitle, accent, children }) {
-  const containerRef = useRef(null);
-  const { scrollYProgress } = useScroll({
-    target: containerRef,
-    offset: ['start end', 'end start'],
-  });
+const Panel = ({ title, text, index, progress }) => {
+  const baseStart = index * 0.25;
+  const baseEnd = baseStart + 0.25;
 
-  const y = useTransform(scrollYProgress, [0, 1], [40, -40]);
-  const opacity = useTransform(scrollYProgress, [0, 0.25, 0.75, 1], [0, 1, 1, 0]);
+  const opacity = useTransform(progress, [baseStart, baseEnd], [0, 1]);
+  const y = useTransform(progress, [baseStart, baseEnd], [60, 0]);
+  const blur = useTransform(progress, [baseStart, baseEnd], [8, 0]);
 
   return (
-    <section ref={containerRef} className="relative h-[180vh]">
-      <div className="sticky top-0 h-screen">
-        <div className="absolute inset-0 flex items-center justify-center">
-          <motion.div
-            style={{ y, opacity }}
-            className="will-change-transform max-w-3xl mx-auto px-6 text-center"
-          >
-            <span className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/5 px-3 py-1 text-xs text-white/80">
-              <span className={`h-2 w-2 rounded-full ${accent}`} />
-              {subtitle}
-            </span>
-            <h3 className="mt-4 text-3xl sm:text-5xl font-bold tracking-tight leading-tight">
-              {title}
-            </h3>
-            <p className="mt-4 text-white/75 text-base sm:text-lg leading-relaxed">
-              {children}
-            </p>
-          </motion.div>
+    <motion.div
+      style={{ opacity, y, filter: blur.to(b => `blur(${b}px)`) }}
+      className="mx-auto max-w-3xl rounded-2xl border border-white/10 bg-white/5 backdrop-blur p-6 sm:p-8"
+    >
+      <h3 className="text-2xl sm:text-3xl font-semibold bg-clip-text text-transparent bg-gradient-to-br from-white to-cyan-300">
+        {title}
+      </h3>
+      <p className="mt-3 text-white/80 text-base sm:text-lg leading-relaxed">{text}</p>
+    </motion.div>
+  );
+};
+
+const Story = () => {
+  const container = useRef(null);
+  const { scrollYProgress } = useScroll({ target: container, offset: ['start start', 'end end'] });
+
+  return (
+    <section id="story" ref={container} className="relative w-full">
+      <div className="sticky top-0 h-screen overflow-hidden">
+        {/* Background gradients */}
+        <div className="pointer-events-none absolute inset-0">
+          <div className="absolute inset-0 bg-gradient-to-b from-neutral-950 via-neutral-950/80 to-neutral-950" />
+          <div className="absolute -top-40 left-1/2 -translate-x-1/2 h-[60vh] w-[80vw] rounded-full bg-cyan-500/20 blur-3xl" />
+        </div>
+
+        {/* Pinned track */}
+        <div className="relative z-10 flex h-full flex-col items-center justify-center gap-10 px-6">
+          <Panel
+            index={0}
+            progress={scrollYProgress}
+            title="Spark the Idea"
+            text="Start with curiosity. Sketch fast, prototype faster, and let constraints spark creativity."
+          />
+          <Panel
+            index={1}
+            progress={scrollYProgress}
+            title="Build with Momentum"
+            text="Pair up, break down problems, and ship small wins. Momentum beats perfection every time."
+          />
+          <Panel
+            index={2}
+            progress={scrollYProgress}
+            title="Test in the Wild"
+            text="Show, don’t tell. Put it in hands early, listen hard, and iterate with intent."
+          />
+          <Panel
+            index={3}
+            progress={scrollYProgress}
+            title="Launch and Learn"
+            text="Celebrate the launch, then measure impact. Capture learnings and prep for the next sprint."
+          />
         </div>
       </div>
+
+      {/* Scroll length for pinning */}
+      <div className="h-[350vh]" />
     </section>
   );
-}
+};
 
-export default function Story() {
-  return (
-    <div className="relative">
-      <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-neutral-950 via-transparent to-neutral-950/80" />
-      <div className="max-w-7xl mx-auto">
-        <Panel title="From spark to startup" subtitle="The journey" accent="bg-cyan-400">
-          Start with curiosity. We help you turn questions into bold ideas and actionable problems worth solving.
-        </Panel>
-        <Panel title="Learn by doing" subtitle="Workshops" accent="bg-emerald-400">
-          Level up with hands-on sessions in design, code, and pitching. Build real prototypes — not just slides.
-        </Panel>
-        <Panel title="Build with peers" subtitle="Community" accent="bg-violet-400">
-          Collaborate with teammates, mentors, and alumni. Share feedback, iterate fast, and keep momentum high.
-        </Panel>
-        <Panel title="Launch with confidence" subtitle="Demo day" accent="bg-amber-400">
-          Ship the MVP, tell a tight story, and get it in front of people. We celebrate launches, not intentions.
-        </Panel>
-      </div>
-    </div>
-  );
-}
+export default Story;
