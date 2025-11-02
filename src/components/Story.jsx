@@ -1,73 +1,82 @@
 import React, { useRef } from 'react';
 import { motion, useScroll, useTransform } from 'framer-motion';
 
-const Panel = ({ title, text, index, progress }) => {
-  const baseStart = index * 0.25;
-  const baseEnd = baseStart + 0.25;
+const panels = [
+  {
+    title: 'Kickoff',
+    text: 'Meet mentors, form teams, and set your game plan for three days of rapid learning.',
+  },
+  {
+    title: 'Ideate',
+    text: 'Discover real problems worth solving and shape bold, testable ideas.',
+  },
+  {
+    title: 'Build',
+    text: 'Prototype fast. Validate faster. Ship something you can show and tell.',
+  },
+  {
+    title: 'Pitch',
+    text: 'Tell a sharp story, demo with confidence, and get feedback from judges.',
+  },
+];
 
-  const opacity = useTransform(progress, [baseStart, baseEnd], [0, 1]);
-  const y = useTransform(progress, [baseStart, baseEnd], [60, 0]);
-  const blur = useTransform(progress, [baseStart, baseEnd], [8, 0]);
+export default function Story() {
+  const sectionRef = useRef(null);
+  const { scrollYProgress } = useScroll({ target: sectionRef, offset: ['start start', 'end end'] });
+
+  // Create staggered reveal ranges for 4 panels across the scroll
+  const ranges = [
+    [0.0, 0.2, 0.35],
+    [0.25, 0.45, 0.6],
+    [0.5, 0.7, 0.85],
+    [0.75, 0.95, 1.0],
+  ];
 
   return (
-    <motion.div
-      style={{ opacity, y, filter: blur.to(b => `blur(${b}px)`) }}
-      className="mx-auto max-w-3xl rounded-2xl border border-white/10 bg-white/5 backdrop-blur p-6 sm:p-8"
-    >
-      <h3 className="text-2xl sm:text-3xl font-semibold bg-clip-text text-transparent bg-gradient-to-br from-white to-cyan-300">
-        {title}
-      </h3>
-      <p className="mt-3 text-white/80 text-base sm:text-lg leading-relaxed">{text}</p>
-    </motion.div>
-  );
-};
+    <section id="story" ref={sectionRef} className="relative bg-neutral-950">
+      {/* Scroll track to enable pinning */}
+      <div className="h-[350vh]">
+        {/* Sticky viewport container */}
+        <div className="sticky top-0 h-screen overflow-hidden">
+          <div className="absolute inset-0 flex items-center justify-center">
+            <h2 className="text-2xl sm:text-4xl md:text-5xl font-bold text-white/70">
+              Your Bootcamp Journey
+            </h2>
+          </div>
 
-const Story = () => {
-  const container = useRef(null);
-  const { scrollYProgress } = useScroll({ target: container, offset: ['start start', 'end end'] });
+          {/* Narrative panels */}
+          <div className="absolute inset-0">
+            {panels.map((p, i) => {
+              const [start, mid, end] = ranges[i];
+              const opacity = useTransform(scrollYProgress, [start, mid, end], [0, 1, 0]);
+              const y = useTransform(scrollYProgress, [start, mid], ['20%', '0%']);
+              const blur = useTransform(scrollYProgress, [start, mid], ['6px', '0px']);
+              return (
+                <motion.div
+                  key={i}
+                  style={{ opacity, y, filter: blur.to((b) => `blur(${b})`) }}
+                  className="h-full w-full flex items-center justify-center px-6"
+                >
+                  <div className="max-w-3xl text-center">
+                    <div className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-3 py-1 text-xs sm:text-sm mb-5">
+                      <span className="h-2 w-2 rounded-full bg-fuchsia-400" />
+                      <span className="uppercase tracking-wide text-white/80">{`Step ${i + 1}`}</span>
+                    </div>
+                    <h3 className="text-3xl sm:text-4xl md:text-5xl font-bold">{p.title}</h3>
+                    <p className="mt-4 text-white/75 text-base sm:text-lg md:text-xl">
+                      {p.text}
+                    </p>
+                  </div>
+                </motion.div>
+              );
+            })}
+          </div>
 
-  return (
-    <section id="story" ref={container} className="relative w-full">
-      <div className="sticky top-0 h-screen overflow-hidden">
-        {/* Background gradients */}
-        <div className="pointer-events-none absolute inset-0">
-          <div className="absolute inset-0 bg-gradient-to-b from-neutral-950 via-neutral-950/80 to-neutral-950" />
-          <div className="absolute -top-40 left-1/2 -translate-x-1/2 h-[60vh] w-[80vw] rounded-full bg-cyan-500/20 blur-3xl" />
-        </div>
-
-        {/* Pinned track */}
-        <div className="relative z-10 flex h-full flex-col items-center justify-center gap-10 px-6">
-          <Panel
-            index={0}
-            progress={scrollYProgress}
-            title="Spark the Idea"
-            text="Start with curiosity. Sketch fast, prototype faster, and let constraints spark creativity."
-          />
-          <Panel
-            index={1}
-            progress={scrollYProgress}
-            title="Build with Momentum"
-            text="Pair up, break down problems, and ship small wins. Momentum beats perfection every time."
-          />
-          <Panel
-            index={2}
-            progress={scrollYProgress}
-            title="Test in the Wild"
-            text="Show, don’t tell. Put it in hands early, listen hard, and iterate with intent."
-          />
-          <Panel
-            index={3}
-            progress={scrollYProgress}
-            title="Launch and Learn"
-            text="Celebrate the launch, then measure impact. Capture learnings and prep for the next sprint."
-          />
+          {/* Top/Bottom fades for a pleasant edge */}
+          <div className="pointer-events-none absolute top-0 inset-x-0 h-24 bg-gradient-to-b from-neutral-950 to-transparent" />
+          <div className="pointer-events-none absolute bottom-0 inset-x-0 h-24 bg-gradient-to-t from-neutral-950 to-transparent" />
         </div>
       </div>
-
-      {/* Scroll length for pinning */}
-      <div className="h-[350vh]" />
     </section>
   );
-};
-
-export default Story;
+}

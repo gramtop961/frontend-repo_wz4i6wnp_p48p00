@@ -4,9 +4,9 @@ import Story from './components/Story.jsx';
 import Highlights from './components/Highlights.jsx';
 import Footer from './components/Footer.jsx';
 
-function App() {
+export default function App() {
   return (
-    <div className="min-h-screen bg-neutral-950 text-white selection:bg-cyan-500/30 selection:text-white">
+    <div className="bg-neutral-950 text-white min-h-screen selection:bg-fuchsia-500/30 selection:text-white">
       <Hero />
       <Story />
       <Highlights />
@@ -14,5 +14,3 @@ function App() {
     </div>
   );
 }
-
-export default App;
