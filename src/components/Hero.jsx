@@ -1,21 +1,25 @@
 import React, { useMemo, useRef, useState } from 'react';
 import Spline from '@splinetool/react-spline';
 import { Rocket } from 'lucide-react';
-import { motion, useScroll, useTransform } from 'framer-motion';
+import { motion, useScroll, useTransform, useReducedMotion, useInView } from 'framer-motion';
 
 export default function Hero() {
   const ref = useRef(null);
   const { scrollYProgress } = useScroll({ target: ref, offset: ['start start', 'end start'] });
+
+  // Respect user preference and allow manual override
+  const prefersReduced = useReducedMotion();
+  const [interactive, setInteractive] = useState(!prefersReduced);
+  const toggleLabel = useMemo(() => (interactive ? 'Reduce motion' : 'Enable interaction'), [interactive]);
+
+  // Mount 3D only when in view to avoid main-thread cost while off-screen
+  const inView = useInView(ref, { margin: '0px 0px -15% 0px', amount: 0.1 });
 
   // Parallax for heading, subtext and buttons
   const titleY = useTransform(scrollYProgress, [0, 1], [0, -120]);
   const titleOpacity = useTransform(scrollYProgress, [0, 0.6], [1, 0]);
   const subY = useTransform(scrollYProgress, [0, 1], [0, -80]);
   const subOpacity = useTransform(scrollYProgress, [0, 0.5], [1, 0]);
-
-  // Optional performance toggle for users who feel the 3D is heavy
-  const [interactive, setInteractive] = useState(true);
-  const toggleLabel = useMemo(() => (interactive ? 'Reduce motion' : 'Enable interaction'), [interactive]);
 
   return (
     <header ref={ref} className="relative w-full min-h-[100vh] overflow-hidden">
@@ -43,13 +47,15 @@ export default function Hero() {
         </div>
       </div>
 
-      {/* Spline scene as interactive visual - new animation asset */}
+      {/* Spline scene as interactive visual - lazy-mounted when in view */}
       <div className="absolute inset-0">
         <div className={interactive ? '' : 'pointer-events-none'}>
-          <Spline
-            scene="https://prod.spline.design/EF7JOSsHLk16Tlw9/scene.splinecode"
-            style={{ width: '100%', height: '100%' }}
-          />
+          {inView && (
+            <Spline
+              scene="https://prod.spline.design/EF7JOSsHLk16Tlw9/scene.splinecode"
+              style={{ width: '100%', height: '100%' }}
+            />
+          )}
         </div>
         {/* Soft gradient shading that doesn't block interactions */}
         <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-neutral-950/40 via-neutral-950/20 to-neutral-950" />
@@ -63,20 +69,20 @@ export default function Hero() {
             <div className="md:col-span-7 lg:col-span-6">
               <motion.h1
                 style={{ y: titleY, opacity: titleOpacity }}
-                className="text-4xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight leading-[1.1]"
+                className="will-change-transform text-4xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight leading-[1.1]"
               >
                 Build. Learn. Launch.
               </motion.h1>
               <motion.p
                 style={{ y: subY, opacity: subOpacity }}
-                className="mt-5 text-base sm:text-lg text-white/80 max-w-prose"
+                className="will-change-transform mt-5 text-base sm:text-lg text-white/80 max-w-prose"
               >
                 A modern hub for innovators at College of Engineering, Cherthala. Explore hands-on workshops, join community-led
                 projects, and stay up to date with talks and bootcamps powered by IEDC.
               </motion.p>
               <motion.div
                 style={{ opacity: subOpacity }}
-                className="mt-7 flex flex-col sm:flex-row gap-3"
+                className="will-change-transform mt-7 flex flex-col sm:flex-row gap-3"
               >
                 <a
                   href="#register"

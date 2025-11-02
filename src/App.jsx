@@ -1,5 +1,6 @@
 import React from 'react';
 import Hero from './components/Hero.jsx';
+import Story from './components/Story.jsx';
 import Events from './components/Events.jsx';
 import Team from './components/Team.jsx';
 import Updates from './components/Updates.jsx';
@@ -9,6 +10,9 @@ export default function App() {
     <div className="min-h-screen bg-neutral-950 text-white selection:bg-cyan-500/30 selection:text-white">
       <Hero />
       <main>
+        <section aria-label="Narrative" className="scroll-mt-24">
+          <Story />
+        </section>
         <section id="events" className="scroll-mt-24">
           <Events />
         </section>
